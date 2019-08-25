@@ -1,3 +1,11 @@
 # GithubFetcher
 Java application to fetch github repositories 
-Lombok, Feign
+
+Application contains technologies like:
+
+Lombok, 
+Feign,
+ApplicationEvents,
+EntityListeners,
+Mockito,
+Junit
