@@ -13,7 +13,6 @@ import javax.validation.Valid;
 import java.util.Collections;
 
 @RestController
-@RequestMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
 
     private UserService userService;
@@ -22,7 +21,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/create")
+    @PostMapping("/user")
     public ResponseEntity createUser(@Valid @RequestBody NewUserDTO newUserDTO) {
         try {
             userService.saveUser(newUserDTO);
@@ -32,19 +31,19 @@ public class UserController {
         }
     }
 
-    @GetMapping("/getAll")
+    @GetMapping("/user/getAll")
     public ResponseEntity getAllUsers() {
         return ResponseEntity.ok(userService.getAll());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/user/{id}")
     public ResponseEntity getById(@PathVariable(value = "id") Long id) {
         return userService.findOneById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/update")
+    @PutMapping("/user")
     public ResponseEntity updateUser(@RequestBody NewUserDTO newUserDTO) {
         try {
             userService.updateUser(newUserDTO);

@@ -17,5 +17,10 @@ public interface UserService {
 
     Optional<User> findOneById(Long id);
 
+    Optional<User> findOneByLoginWithRoles(String login);
+
     void updateUser(NewUserDTO newUserDTO) throws UserNotFound;
+
+    void removeUser (String login);
+
 }

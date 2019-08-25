@@ -8,6 +8,7 @@ import com.githubfetcher.exception.UserAlreadyExists;
 import com.githubfetcher.exception.UserNotFound;
 import com.githubfetcher.repository.UserRepository;
 import com.githubfetcher.service.RoleService;
+import com.githubfetcher.service.UserHistoryService;
 import com.githubfetcher.service.UserService;
 import org.assertj.core.util.Lists;
 import org.springframework.context.ApplicationEventPublisher;
@@ -25,11 +26,13 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     private RoleService roleService;
     private ApplicationEventPublisher publisher;
+    private UserHistoryService userHistoryService;
 
-    public UserServiceImpl(UserRepository userRepository, RoleService roleService, ApplicationEventPublisher publisher) {
+    public UserServiceImpl(UserRepository userRepository, RoleService roleService, ApplicationEventPublisher publisher, UserHistoryService userHistoryService) {
         this.userRepository = userRepository;
         this.roleService = roleService;
         this.publisher = publisher;
+        this.userHistoryService = userHistoryService;
     }
 
     @Override
@@ -46,13 +49,13 @@ public class UserServiceImpl implements UserService {
                 .password(newUserDTO.getPassword())
                 .firstName(newUserDTO.getFirstName())
                 .lastName(newUserDTO.getLastName())
+                .roles(roleService.findAllByNameIn(Lists.newArrayList("USER")))
                 .build();
 
-        if (newUserDTO.getParams().containsKey(PHONE_NUMBER)) {
+        if (newUserDTO.getParams() != null && newUserDTO.getParams().containsKey(PHONE_NUMBER)) {
             user.addParam(PHONE_NUMBER, newUserDTO.getParams().get(PHONE_NUMBER));
         }
 
-        user.setRoles(roleService.findAllByNameIn(Lists.newArrayList("USER")));
         userRepository.save(user);
     }
 
@@ -66,6 +69,13 @@ public class UserServiceImpl implements UserService {
         return userRepository.findOneById(id);
     }
 
+    @Override
+    public Optional<User> findOneByLoginWithRoles(String login) {
+        return userRepository.findOneByLogin(login).map(u -> {
+            u.getRoles().size();
+            return u;
+        });
+    }
 
     @Override
     @Transactional
@@ -73,11 +83,14 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findOneByLogin(newUserDTO.getLogin())
                 .orElseThrow(() -> new UserNotFound(String.format("User with login: %s not found", newUserDTO.getLogin())));
 
-        user.setFirstName(newUserDTO.getFirstName());
-        user.setLastName(newUserDTO.getLastName());
-        user.setLastName(newUserDTO.getLastName());
+        if(newUserDTO.getFirstName() != null)
+          user.setFirstName(newUserDTO.getFirstName());
+        if(newUserDTO.getLastName() != null)
+            user.setLastName(newUserDTO.getLastName());
+        if(newUserDTO.getPassword() != null)
+            user.setLastName(newUserDTO.getPassword());
 
-        if (newUserDTO.getParams().containsKey(PHONE_NUMBER)) {
+        if (newUserDTO.getParams() != null && newUserDTO.getParams().containsKey(PHONE_NUMBER)) {
             user.addParam(PHONE_NUMBER, newUserDTO.getParams().get(PHONE_NUMBER));
         }
         publisher.publishEvent(NotificationEvent.builder()
@@ -88,5 +101,15 @@ public class UserServiceImpl implements UserService {
                 )
                 .build()
         );
+    }
+
+    @Override
+    public void removeUser (String login) {
+        Optional<User> user = userRepository.findOneByLogin(login);
+        user.ifPresent(u -> {
+            u.getRoles().clear();
+            userHistoryService.deleteByUserId(u.getId());
+            userRepository.delete(u);
+        });
     }
 }

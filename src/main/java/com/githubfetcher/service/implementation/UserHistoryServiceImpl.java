@@ -22,4 +22,9 @@ public class UserHistoryServiceImpl implements UserHistoryService {
     public void saveUserHistory(UserHistory userHistory) {
         userHistoryRepository.save(userHistory);
     }
+
+    @Override
+    public void deleteByUserId(Long id) {
+        userHistoryRepository.deleteByUserId(id);
+    }
 }

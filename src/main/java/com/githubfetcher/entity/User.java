@@ -2,6 +2,7 @@ package com.githubfetcher.entity;
 
 import com.githubfetcher.component.UserHistoryListener;
 import lombok.*;
+import org.hibernate.action.internal.OrphanRemovalAction;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -33,7 +34,7 @@ public class User extends Params {
     @Column(name = "last_name")
     private String lastName;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name="user_roles",
             joinColumns = {@JoinColumn(name="user_id", referencedColumnName="id")},
             inverseJoinColumns = {@JoinColumn(name="role_id", referencedColumnName="id")}
@@ -41,10 +42,11 @@ public class User extends Params {
     private Set<Role> roles;
 
     @Builder
-    public User(@NotNull String login, @NotNull String password, @NotNull String firstName, @NotNull String lastName) {
+    public User(@NotNull String login, @NotNull String password, @NotNull String firstName, @NotNull String lastName, Set<Role> roles) {
         this.login = login;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.roles = roles;
     }
 }

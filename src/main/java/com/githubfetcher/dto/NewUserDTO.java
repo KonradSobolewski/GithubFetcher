@@ -20,5 +20,6 @@ public class NewUserDTO {
     private String firstName;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String lastName;
+
     private HashMap<String, Object> params;
 }

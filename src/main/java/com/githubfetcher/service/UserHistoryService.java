@@ -4,4 +4,6 @@ import com.githubfetcher.entity.UserHistory;
 
 public interface UserHistoryService {
     void saveUserHistory(UserHistory userHistory);
+
+    void deleteByUserId(Long id);
 }
